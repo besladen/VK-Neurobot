@@ -20,7 +20,7 @@ from vkbottle import VKAPIError
 from vkbottle.bot import Bot, Message
 from vkbottle.dispatch.rules.base import ChatActionRule, FromUserRule
 from vkbottle_types.objects import MessagesMessageActionStatus
-
+from vkbottle.tools import DocMessagesUploader
 
 class Config(BaseModel):
     bot_token: str = Field(min_length=1)
@@ -50,20 +50,34 @@ tag_pattern = re.compile(r"\[(id\d+?)\|.+?\]")
 empty_line_pattern = re.compile(r"^\s+", flags=re.M)
 
 
-@bot.on.chat_message(  # type: ignore[misc]
-    ChatActionRule(MessagesMessageActionStatus.CHAT_INVITE_USER.value)
-)
-async def invited(message: Message) -> None:
-    """Приветствие при приглашении бота в беседу."""
-    if message.action is None or message.group_id is None:
-        return
-    if message.action.member_id == -message.group_id:
-        await message.answer(
-            """Всем привет!
-Для работы мне нужно выдать доступ к переписке или права администратора.
-Для сброса базы данных используйте команды /сброс или /reset"""
-        )
+@bot.on.message(text="🐱")
+async def hi_handler(message: Message):
+    await message.answer("Наташа ты покормила кота?")
+  
+@bot.on.message(text="//Да")
+async def hiz_handler(message: Message):
+    await message.answer("Я Даун")
 
+@bot.on.message(text="/База")
+async def hii_handler(message: Message):
+    a = ["video-206886750_456240015", "video439524667_456240725", "video514749102_456239196"]
+    await message.answer(attachment=random.choice(a))
+
+@bot.on.message(text="/татыч")
+async def hiw_handler(message: Message):
+    await message.answer("Татыч ты секси")
+
+@bot.on.message(text="/Виталя")
+async def hiq_handler(message: Message):
+    await message.answer("Мне кажется ты мой брат, мы с тобой явно из одной двачерской семьи")
+
+@bot.on.message(text="🚑")
+async def hix_handler(message: Message):
+    await message.answer("У меня инсульт")
+
+@bot.on.message(text="/Да")
+async def hic_handler(message: Message):
+    await message.answer("Пизда")    
 
 @bot.on.chat_message(text=["/@$#", "/@$#"])  # type: ignore[misc]
 async def reset(message: Message) -> None:
@@ -169,12 +183,12 @@ async def talk(message: Message) -> None:
     chat_history_ids = model.generate(
             chat_history_ids,
             num_return_sequences=1,  # use for more variants, but have to print [i]
-            max_length=512,
+            max_length=100,
             no_repeat_ngram_size=3,
             do_sample=True,
             top_k=50,
             top_p=0.9,
-            temperature=0.6,  # 0 for greedy
+            temperature=1.0,  # 0 for greedy
             mask_token_id=tokenizer.mask_token_id,
             eos_token_id=tokenizer.eos_token_id,
             unk_token_id=tokenizer.unk_token_id,
@@ -190,6 +204,11 @@ async def talk(message: Message) -> None:
     bototvet = (tokenizer.decode(chat_history_ids[:, input_len:][0], skip_special_tokens=True))
     await message.answer(bototvet)
 
+    
+
+@bot.on.chat_message(mention=True)
+async def mention_handler(message: Message):
+    await message.reply("Привет, чего вы хотите?")    
 
 def main() -> None:
     logging.basicConfig(
